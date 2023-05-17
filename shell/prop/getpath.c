@@ -8,33 +8,42 @@
 
 char *get_full_path(char *command) {
     int pipefd[2];
+    
+    const int BUFFER_SIZE = 1024;
+    char buffer[1024];
+    ssize_t read_size;
+    char *which_args[3];
+    char *newline_ptr;
+    pid_t pid;
     if (pipe(pipefd) == -1) {
         perror("pipe");
         return NULL;
     }
 
-    pid_t pid = fork();
+    pid = fork();
     if (pid == -1) {
         perror("fork");
         return NULL;
     }
 
-    if (pid == 0) {
-        // Child process
-        close(pipefd[0]); // Close the read end of the pipe
-        dup2(pipefd[1], STDOUT_FILENO); // Redirect stdout to the pipe
+    if (pid == 0) 
+    {
+        close(pipefd[0]);
+        dup2(pipefd[1], STDOUT_FILENO);
 
-        char *which_args[] = {"which", command, NULL};
+	which_args[0] = "which";
+       which_args[1] = command;
+      which_args[2] = NULL;
+
         execvp("which", which_args);
         perror("execvp");
         exit(1);
     } else {
-        // Parent process
-        close(pipefd[1]); // Close the write end of the pipe
+        close(pipefd[1]);
 
-        const int BUFFER_SIZE = 1024;
-        char buffer[BUFFER_SIZE];
-        ssize_t read_size = read(pipefd[0], buffer, BUFFER_SIZE - 1);
+	
+
+        read_size = read(pipefd[0], buffer, BUFFER_SIZE - 1);
         if (read_size == -1) {
             perror("read");
             return NULL;
@@ -43,13 +52,11 @@ char *get_full_path(char *command) {
 
         wait(NULL);
 
-        // Trim the trailing newline character from the result
-        char *newline_ptr = strchr(buffer, '\n');
+
+        newline_ptr = strchr(buffer, '\n');
         if (newline_ptr != NULL) {
             *newline_ptr = '\0';
         }
-
-        // Return a dynamically allocated copy of the result
         return strdup(buffer);
     }
 }

@@ -9,6 +9,7 @@ void execute_command(char *command, char **args);
 void _fork(char *line);
 char *get_full_path(char *command);
 void print_environment_variables();
+void process(char *line);
 
-#endif  // SHELL_H
+#endif
 

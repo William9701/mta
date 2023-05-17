@@ -20,6 +20,7 @@ void run_shell()
     char *line = NULL;
     size_t buffer = 0;
     char *file;
+    char *arg;
     char* command;
     char** arguments;
     int arg_count;
@@ -27,30 +28,37 @@ void run_shell()
     ssize_t get;
     pid_t pid;
 
-    while (1) {
-if (isatty(fileno(stdin))) {
-            // Interactive Mode
-            write(STDOUT_FILENO, "$ ", 2);
-            get = getline(&line, &buffer, stdin);
-            if (get == -1) {
-                if (feof(stdin)) {
-                    write(STDOUT_FILENO, "\n", 2); // Print a newline before exiting on Ctrl+D (end of file).
-                    break;
-                } else {
-                    perror("getline");
-                    continue;
-                }
-            }
-            line[get - 1] = '\0';
-        } else {
-            // Non-Interactive Mode
-            if (getline(&line, &buffer, stdin) == -1) {
-                break; // Exit the loop when reaching end-of-file in non-interactive mode.
-            }
-            line[strcspn(line, "\n")] = '\0'; // Remove the trailing newline character.
-        }
+    while (1) 
+    {
+	if (isatty(fileno(stdin))) 
+	{
+		write(STDOUT_FILENO, "$ ", 2);
+		get = getline(&line, &buffer, stdin);
+			if (get == -1) 
+			{
+				if (feof(stdin)) 
+				{
+				write(STDOUT_FILENO, "\n", 2); // Print a newline before exiting on Ctrl+D (end of file).
+				break;
+			}
+			else
+			{
+			perror("getline");
+			continue;
+			}
+			}
+		line[get - 1] = '\0';
+	}
+	else
+	{
+		if (getline(&line, &buffer, stdin) == -1)
+		{
+		break;
+		}
+		line[strcspn(line, "\n")] = '\0';
+	}
 
-        if (strcmp(line, "exit") == 0)
+	if (strcmp(line, "exit") == 0)
 	{
 		break;
 	}
@@ -61,22 +69,48 @@ if (isatty(fileno(stdin))) {
 		continue;
 	}
 
-        if (access(line, X_OK) == 0) {
-            // Command is accessible, execute it
-            pid = fork();
+ if (access(line, X_OK) == 0 || strchr(line, '/') != NULL) {
+            // Command is accessible or has an absolute path, execute it
+            command = line;
+            arguments = NULL;
+            arg_count = 0;
+
+            if (strchr(line, '/') != NULL) {
+                // Command has an absolute path, extract the command and arguments
+                command = strtok(line, " ");
+                arguments = realloc(arguments, sizeof(char*) * (arg_count + 1));
+                arguments[0] = command;
+                arg_count = 1;
+
+                while ((arg = strtok(NULL, " ")) != NULL) {
+                    arguments[arg_count] = arg;
+                    arg_count++;
+                }
+                arguments[arg_count] = NULL;
+            }
+
+            pid_t pid = fork();
             if (pid == -1) {
-                perror("fork");
+                 perror("fork");
                 continue;
             }
 
             if (pid == 0) {
                 // Child process
-                execute_command(line, NULL);
+                execute_command(command, arguments);
+                if (arguments != NULL) {
+                    free(arguments);
+                }
                 exit(1);
             } else {
                 // Parent process
                 wait(NULL);
             }
+        else {
+            perror("Command cannot be found");
+        }
+
+	
         } else {
             if (strchr(line, ' ') == NULL) {
                 file = get_full_path(line);

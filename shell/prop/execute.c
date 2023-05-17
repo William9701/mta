@@ -6,11 +6,19 @@
 #include <sys/wait.h>
 #include "shell.h"
 
-void execute_command(char *command, char** arguments) {
-    //char *token;
-     extern char** environ;
-    execve(command,arguments, environ); // Execute the command
-    perror("");
-    exit(1);
+/**
+ * execute_command - execute_command
+ * @command: command
+ * @arguments: arguments
+ */
+
+
+void execute_command(char *command, char **arguments)
+{
+	extern char **environ;
+
+	execve(command, arguments, environ);
+	perror("");
+	exit(1);
 }
 
