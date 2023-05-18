@@ -20,7 +20,9 @@ int main(int argc, char **argv)
 	{
 	for (i = 1; i < argc; i++)
 	{
-		execute_command(argv[i], NULL);
+			execute_command(argv[i], NULL);
+			return (0);
+		
 	}
 	}
 	else

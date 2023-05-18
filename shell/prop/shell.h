@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 #include <unistd.h>
-
+extern char **environ;
 void run_shell();
 void execute_command(char *command, char **args);
 void _fork(char *line);

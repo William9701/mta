@@ -15,7 +15,6 @@
 
 void execute_command(char *command, char **arguments)
 {
-	extern char **environ;
 
 	execve(command, arguments, environ);
 	perror("");

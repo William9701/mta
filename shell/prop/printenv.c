@@ -3,9 +3,10 @@
 #include <string.h>
 #include "shell.h"
 
-extern char **environ;
-
-void print_environment_variables()
+/**
+ * print_environment_variables - print_environment_variables
+ */
+void print_environment_variables(void)
 {
 	int i;
 	size_t lenght;
