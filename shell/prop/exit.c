@@ -3,92 +3,112 @@
 #include <string.h>
 #include <stdio.h>
 #include "shell.h"
+#include <stddef.h>
 
 /**
- * _atoi - covert
- * @s: the pointer
- * Return: a integer
- */
-
-int _atoi(char *s)
-{
-
-	int c = 0;
-	unsigned int ni = 0;
-	int min = 1;
-	int isi = 0;
-
-	while (s[c])
-	{
-		if (s[c] == 45)
-		{
-			min *= -1;
-		}
-		while (s[c] >= 48 && s[c] <= 57)
-		{
-			isi = 1;
-			ni = (ni * 10) + (s[c] - '0');
-			c++;
-		}
-		if (isi == 1)
-		{
-			break;
-		}
-		c++;
-	}
-	ni *= min;
-	return (ni);
-}
-
-
-/**
- * is_exit_command - is_exit_command
- * @line: line
- * Return: true/false
- */
-int is_exit_command(char *line)
-{
-	char *token;
-
-    token = strtok(line, " ");
-
-    
-    if (token != NULL && strcmp(token, "exit") == 0) {
-        return 1;
-    } else {
-        return 0; 
-    }
-}
-
-
-/**
- * get_next_argument_as_integer - get_next_argument_as_integer
+ * get_exit_code - get_exit_code
  * @line: line
  * Return: the next number
  */
-int get_exit_code(char *line) 
+int get_exit_code(char *line)
 {
 
 	int number = 0;
-	size_t i;
+	int i;
 
-	for (i = 0; i < strlen(line); i++)
+	for (i = 0; i < _strlen(line); i++)
 	{
 		if (line[i] >= '0' && line[i] <= '9')
 		{
 			number = number * 10 + (line[i] - '0');
 		}
 	}
-	return number;
+	return (number);
 
 }
-
 
 /**
- * my_exit - my_exit
- * @exit_code: exit code
+ * _strtok - Tokenize a string
+ * @str: The string to tokenize
+ * @delim: The delimiter characters
+ * Return: Pointer to the next token in the string, or NULL if no more tokens
  */
-void my_exit(int exit_code)
+char *_strtok(char *str, const char *delim)
 {
-       	exit(exit_code);
+	char *token_start;
+	const char *d;
+	char *next_token = NULL;
+	bool found_delim = false;
+
+	if (str != NULL)
+	{
+		next_token = str;
+	}
+	if (next_token == NULL || *next_token == '\0')
+	{
+		return (NULL);
+	}
+	token_start = next_token;
+	while (*next_token)
+	{
+	{
+		d = delim;
+	}
+	while (*d)
+	{
+		if (*next_token == *d)
+		{
+			*next_token = '\0';
+			next_token++;
+			found_delim = true;
+			break;
+		}
+		d++;
+	}
+	if (found_delim)
+	{
+		break;
+	}
+	next_token++;
+	}
+
+	return (token_start);
 }
+
+/**
+ * _strdup - Duplicate a string
+ * @str: The string to duplicate
+ * Return: Pointer
+ */
+char *_strdup(const char *str)
+{
+	size_t len;
+	const char *s;
+	char *duplicate;
+	char *dup_iter;
+
+	if (str == NULL)
+	{
+		return (NULL);
+	}
+	len = 0;
+	s = str;
+	while (*s++)
+		len++;
+
+	duplicate = (char *) malloc((len + 1) * sizeof(char));
+
+	if (duplicate == NULL)
+	{
+		return (NULL);
+	}
+	dup_iter = duplicate;
+
+	while (*str)
+		*dup_iter++ = *str++;
+
+	*dup_iter = '\0';
+
+	return (duplicate);
+}
+

@@ -35,15 +35,15 @@ int main(int argc, char **argv)
  * run_shell - shell main program
  * Return: 0
  */
-int run_shell()
+int run_shell(void)
 {
 	char *line = NULL;
 	size_t buffer = 0;
 	ssize_t get;
 	char *searchStr;
-	char* extractedWord;
-	char *substring1;
-	char *substring2;
+	char *extractedWord;
+	char *subs1;
+	char *subs2;
 	char *directory;
 	int exit_code;
 
@@ -68,36 +68,37 @@ int run_shell()
 		}
 		}
 		line[_strcspn(line, "\n")] = '\0';
-		if (strstr(line, "exit"))
+		if (_strstr(line, ";"))
+		{
+			pprocess(line);
+			continue;
+		}
+		if (_strstr(line, "exit"))
 		{
 				exit_code = get_exit_code(line);
 				exit(exit_code);
-		
 		}
-		if (strstr(line, "cd"))
+		if (_strstr(line, "cd"))
 		{
 			directory = NULL;
 			directory = cdextractWord(line);
-			if (directory != NULL)
-			{
-				 if (change_directory(directory) != 0)
-				 {
-					 perror("cant change");
-					 continue;
-				 }
-			}
+				if (change_directory(directory) != 0)
+				{
+					perror("cant change dir");
+					continue;
+				}
 			continue;
 		}
 
-		if (strncmp(line, "setenv", 6) == 0)
+		if (_strncmp(line, "setenv", 6) == 0)
 		{
 			searchStr = "setenv";
-			substring1 = NULL;
-			substring2 = NULL;
-			extractSubstrings(line, searchStr, &substring1, &substring2);
-			if (substring1 != NULL && substring2 != NULL)
+			subs1 = NULL;
+			subs2 = NULL;
+			extractSubstrings(line, searchStr, &subs1, &subs2);
+			if (subs1 != NULL && subs2 != NULL)
 			{
-				if(_setenv(substring1, substring2, 1) != 0)
+				if (_setenv(subs1, subs2, 1) != 0)
 				{
 					perror("failed to set");
 					continue;
@@ -105,9 +106,9 @@ int run_shell()
 			}
 			continue;
 		}
-		if (strncmp(line, "unsetenv", 8) == 0)
+		if (_strncmp(line, "unsetenv", 8) == 0)
 		{
-			extractedWord= extractWord(line);
+			extractedWord = extractWord(line);
 			if (extractedWord != NULL)
 			{
 				_unsetenv(extractedWord);
@@ -151,23 +152,27 @@ int _strcmp(char *str1, const char *str2)
 
 /**
  * _strcspn - _strcspn
- * @str: string
+ * @string: string
  * @charset: string to check with
  * Return: piosition
  */
 
 size_t _strcspn(char *string, const char *charset)
 {
-    const char* p;
-    const char* s;
-    for (s = string; *s != '\0'; ++s) {
-        for (p = charset; *p != '\0'; ++p) {
-            if (*s == *p) {
-                return (s - string);
-            }
-        }
-    }
-    return (s - string);
+	const char *p;
+	const char *s;
+
+	for (s = string; *s != '\0'; ++s)
+	{
+		for (p = charset; *p != '\0'; ++p)
+		{
+			if (*s == *p)
+			{
+				return (s - string);
+			}
+		}
+	}
+	return (s - string);
 }
 
 /**
@@ -180,14 +185,14 @@ void process(char *line)
 	int arg_count = 0;
 	pid_t pid;
 
-	command = strtok(line, " ");
+	command = _strtok(line, " ");
 	arguments = NULL;
 	while (command != NULL)
 	{
 		arguments = realloc(arguments, sizeof(char *) * (arg_count + 1));
 		arguments[arg_count] = command;
 		arg_count++;
-		command = strtok(NULL, " ");
+		command = _strtok(NULL, " ");
 	}
 	arguments = realloc(arguments, sizeof(char *) * (arg_count + 1));
 	arguments[arg_count] = NULL;
@@ -216,5 +221,6 @@ void process(char *line)
 	{
 	perror("Command not found");
 	}
+
 }
 
