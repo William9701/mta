@@ -37,7 +37,7 @@ char *_strtok(char *str, const char *delim)
 {
 	char *token_start;
 	const char *d;
-	char *next_token = NULL;
+	static char *next_token = NULL;
 	bool found_delim = false;
 
 	if (str != NULL)
