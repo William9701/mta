@@ -57,3 +57,22 @@ int _execvp(char *file, char *const argv[])
 	return (-1);
 }
 
+/**
+ * unset - unset
+ * @line: input
+ * Return: 0 on success
+ */
+int unset(char *line)
+{
+	char *extractedWord = extractWord(line);
+
+	if (extractedWord != NULL)
+	{
+		_unsetenv(extractedWord);
+	}
+	else
+	{
+		perror("failed");
+	}
+	return (0);
+}

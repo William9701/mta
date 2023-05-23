@@ -104,8 +104,8 @@ int change_directory(char *path)
 	cwd = getcwd(NULL, 0);
 	if (cwd != NULL)
 	{
-		_setenv("OLDPWD", _getenv("PWD"), 1);
-		_setenv("PWD", cwd, 1);
+		setenv("OLDPWD", _getenv("PWD"), 1);
+		setenv("PWD", cwd, 1);
 		free(cwd);
 	}
 	return (0);

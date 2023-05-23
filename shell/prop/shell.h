@@ -39,6 +39,13 @@ int _strncmp(const char *s1, const char *s2, size_t n);
 int _execvp(char *file, char *const argv[]);
 char *_strdup(const char *str);
 char *_strtok(char *str, const char *delim);
+char *read_line(void);
+void process_line(char *line);
+void print_prompt(void);
+int change(char *line);
+int set(char *line);
+int unset(char *line);
+
 
 #endif
 

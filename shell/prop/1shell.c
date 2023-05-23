@@ -1,10 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "shell.h"
 #include <unistd.h>
 #include <string.h>
-#include "shell.h"
-#include <sys/types.h>
-#include <sys/wait.h>
 
 /**
  * main - main
@@ -18,11 +16,11 @@ int main(int argc, char **argv)
 
 	if (argc > 1)
 	{
-	for (i = 1; i < argc; i++)
-	{
-		execute_command(argv[i], NULL);
-		return (0);
-	}
+		for (i = 1; i < argc; i++)
+		{
+			execute_command(argv[i], NULL);
+			return (0);
+		}
 	}
 	else
 	{
@@ -32,195 +30,103 @@ int main(int argc, char **argv)
 }
 
 /**
- * run_shell - shell main program
- * Return: 0
+ * print_prompt - print_prompt
  */
-int run_shell(void)
+void print_prompt(void)
+{
+	if (isatty(fileno(stdin)))
+	{
+		write(STDOUT_FILENO, "$ ", 2);
+	}
+}
+
+/**
+ * read_line - read_line
+ * Return: char
+ */
+char *read_line(void)
 {
 	char *line = NULL;
 	size_t buffer = 0;
-	ssize_t get;
-	char *searchStr;
-	char *extractedWord;
-	char *subs1;
-	char *subs2;
-	char *directory;
-	int exit_code;
 
-	while (1)
+	ssize_t get = _GetLine(&line, &buffer, stdin);
+
+	if (get == -1)
 	{
-		if (isatty(fileno(stdin)))
-		{
-			write(STDOUT_FILENO, "$ ", 2);
-		}
-		get = _GetLine(&line, &buffer, stdin);
-		if (get == -1)
-		{
 		if (feof(stdin))
 		{
 			write(STDOUT_FILENO, "\n", 2);
-			break;
+			free(line);
+			return (NULL);
 		}
 		else
 		{
 			perror("getline");
-			continue;
+			free(line);
+			return (NULL);
 		}
-		}
-		line[_strcspn(line, "\n")] = '\0';
-		if (_strstr(line, ";"))
-		{
-			pprocess(line);
-			continue;
-		}
-		if (_strstr(line, "exit"))
-		{
-				exit_code = get_exit_code(line);
-				exit(exit_code);
-		}
-		if (_strstr(line, "cd"))
-		{
-			directory = NULL;
-			directory = cdextractWord(line);
-				if (change_directory(directory) != 0)
-				{
-					perror("cant change dir");
-					continue;
-				}
-			continue;
-		}
-
-		if (_strncmp(line, "setenv", 6) == 0)
-		{
-			searchStr = "setenv";
-			subs1 = NULL;
-			subs2 = NULL;
-			extractSubstrings(line, searchStr, &subs1, &subs2);
-			if (subs1 != NULL && subs2 != NULL)
-			{
-				if (_setenv(subs1, subs2, 1) != 0)
-				{
-					perror("failed to set");
-					continue;
-				}
-			}
-			continue;
-		}
-		if (_strncmp(line, "unsetenv", 8) == 0)
-		{
-			extractedWord = extractWord(line);
-			if (extractedWord != NULL)
-			{
-				_unsetenv(extractedWord);
-				continue;
-			}
-			perror("failed");
-			continue;
-		}
-
-		if (_strcmp(line, "env") == 0)
-		{
-			print_environment_variables();
-			continue;
-		}
-		process(line);
 	}
-	free(line);
-	return (0);
+	line[_strcspn(line, "\n")] = '\0';
+	return (line);
 }
 
-/**
- * _strcmp - _strcmp
- * @str1: string one
- * @str2: strring to check with
- * Return: count
- */
-int _strcmp(char *str1, const char *str2)
-{
-	int i = 0;
-
-	while (str1[i] != '\0' && str2[i] != '\0')
-	{
-		if (str1[i] != str2[i])
-		{
-			return (str1[i] - str2[i]);
-		}
-		i++;
-	}
-	return (str1[i] - str2[i]);
-}
 
 /**
- * _strcspn - _strcspn
- * @string: string
- * @charset: string to check with
- * Return: piosition
+ * process_line - process_line
+ * @line: line
  */
-
-size_t _strcspn(char *string, const char *charset)
+void process_line(char *line)
 {
-	const char *p;
-	const char *s;
-
-	for (s = string; *s != '\0'; ++s)
+	if (_strstr(line, ";"))
 	{
-		for (p = charset; *p != '\0'; ++p)
-		{
-			if (*s == *p)
-			{
-				return (s - string);
-			}
-		}
+		pprocess(line);
 	}
-	return (s - string);
-}
-
-/**
- * process - process the files
- * @line: line of input
- */
-void process(char *line)
-{
-	char *command, *full_path, **arguments;
-	int arg_count = 0;
-	pid_t pid;
-
-	command = _strtok(line, " ");
-	arguments = NULL;
-	while (command != NULL)
+	else if (_strstr(line, "exit"))
 	{
-		arguments = realloc(arguments, sizeof(char *) * (arg_count + 1));
-		arguments[arg_count] = command;
-		arg_count++;
-		command = _strtok(NULL, " ");
+		int exit_code = get_exit_code(line);
+
+		exit(exit_code);
 	}
-	arguments = realloc(arguments, sizeof(char *) * (arg_count + 1));
-	arguments[arg_count] = NULL;
-	full_path = get_full_path(arguments[0]);
-	if (access(full_path, X_OK) == 0)
+	else if (_strstr(line, "cd"))
 	{
-		pid = fork();
-		if (pid == -1)
-		{
-		perror("fork");
-		}
-		if (pid == 0)
-		{
-		execute_command(full_path, arguments);
-		free(full_path);
-		free(arguments);
-		free(line);
-		exit(1);
-		}
-		else
-		{
-			wait(NULL);
-		}
+		change(line);
+	}
+	else if (_strncmp(line, "setenv", 6) == 0)
+	{
+		set(line);
+	}
+	else if (_strncmp(line, "unsetenv", 8) == 0)
+	{
+		unset(line);
+	}
+	else if (_strcmp(line, "env") == 0)
+	{
+		print_environment_variables();
 	}
 	else
 	{
-	perror("Command not found");
+		process(line);
 	}
-
 }
 
+/**
+ * run_shell - run_shell
+ * Return: 0
+ */
+int run_shell(void)
+{
+	char *line;
+
+	while (1)
+	{
+		print_prompt();
+		line = read_line();
+		if (line == NULL)
+		{
+			return (0);
+		}
+		process_line(line);
+		free(line);
+	}
+	return (0);
+}

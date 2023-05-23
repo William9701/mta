@@ -106,22 +106,18 @@ char *_strstr(const char *haystack, const char *needle)
  */
 int _strncmp(const char *s1, const char *s2, size_t n)
 {
-	unsigned char c1, c2;
+	size_t i;
 
-	while (n > 0)
+	for (i = 0; i < n; i++)
 	{
-		c1 = (unsigned char) *s1++;
-		c2 = (unsigned char) *s2++;
-		if (c1 != c2)
+		if (s1[i] != s2[i])
 		{
-			return (c1 - c2);
+			return ((int)(unsigned char)s1[i] - (int)(unsigned char)s2[i]);
 		}
-		if (c1 == '\0')
+		else if (s1[i] == '\0')
 		{
 			return (0);
-			n--;
 		}
 	}
 	return (0);
-
 }

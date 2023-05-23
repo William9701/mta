@@ -112,3 +112,37 @@ char *_strdup(const char *str)
 	return (duplicate);
 }
 
+/**
+ * change - change
+ * @line: line
+ * Return: 0
+ */
+int change(char *line)
+{
+	char *directory = NULL;
+
+	directory = cdextractWord(line);
+
+	if (change_directory(directory) != 0)
+	{
+		perror("cant change dir");
+	}
+	return (0);
+}
+
+int set(char *line)
+{
+	char *searchStr = "setenv";
+	char *subs1 = NULL;
+	char *subs2 = NULL;
+
+	extractSubstrings(line, searchStr, &subs1, &subs2);
+	if (subs1 != NULL && subs2 != NULL)
+	{
+		if (_setenv(subs1, subs2, 1) != 0)
+		{
+			perror("failed to set");
+		}
+	}
+	return (0);
+}
