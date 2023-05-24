@@ -45,6 +45,8 @@ void print_prompt(void);
 int change(char *line);
 int set(char *line);
 int unset(char *line);
+void arrange(char *line);
+void parrange(char *line);
 
 
 #endif

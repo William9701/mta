@@ -91,6 +91,14 @@ void process_line(char *line)
 	{
 		change(line);
 	}
+	else if (_strstr(line, "&&"))
+	{
+		arrange(line);
+	}
+	else if (_strstr(line, "||"))
+	{
+		parrange(line);
+	}
 	else if (_strncmp(line, "setenv", 6) == 0)
 	{
 		set(line);
